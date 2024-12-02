@@ -5,6 +5,7 @@ variables:
   solution: '**/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
+  packageVersion: '1.0.0'
 
 stages:
 - stage: Build
@@ -20,18 +21,26 @@ stages:
     - task: VSBuild@1
       inputs:
         solution: '$(solution)'
-        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true'
         platform: '$(buildPlatform)'
         configuration: '$(buildConfiguration)'
+        msbuildArgs: '/p:Version=$(packageVersion)'
     - task: VSTest@2
       inputs:
         platform: '$(buildPlatform)'
         configuration: '$(buildConfiguration)'
-    - task: PublishBuildArtifacts@1
+    - task: NuGetCommand@2
+      displayName: 'NuGet pack'
       inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-        ArtifactName: 'drop'
-        publishLocation: 'Container'
+        command: pack
+        packagesToPack: '**/StringUtilities.csproj'
+        versioningScheme: byEnvVar
+        versionEnvVar: packageVersion
+    - task: NuGetCommand@2
+      displayName: 'NuGet push'
+      inputs:
+        command: push
+        publishVstsFeed: '$(System.TeamProject)/StringUtilities'
+        allowPackageConflicts: true
 
 - stage: Deploy
   dependsOn: Build
@@ -40,12 +49,10 @@ stages:
   - deployment: Deploy
     pool:
       name: Default
-    environment: 'production'
+    environment: production    
     strategy:
       runOnce:
         deploy:
           steps:
-          - task: IISWebAppDeploymentOnMachineGroup@0
-            inputs:
-              WebSiteName: 'Default Web Site'
-              Package: '$(Pipeline.Workspace)/drop/**/*.zip'
+          - script: |
+              echo "Deployment stage"
