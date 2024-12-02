@@ -1,9 +1,11 @@
 trigger:
 - main
+
 pool:
   name: Default  
+
 variables:
-  solution: '**/*.sln'
+  solution: '**/ClassLibraryProjects.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   packageVersion: '1.0.0'
@@ -24,6 +26,7 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
     msbuildArgs: '/p:Version=$(packageVersion)'
+
 - task: VSTest@2
   displayName: 'Run tests'
   inputs:
@@ -34,13 +37,14 @@ steps:
   displayName: 'NuGet pack'
   inputs:
     command: pack
-    packagesToPack: '**/StringUtilities.csproj'
+    packagesToPack: '**/StringLibrary.csproj'
     versioningScheme: byEnvVar
     versionEnvVar: packageVersion
+    outputDir: '$(Build.ArtifactStagingDirectory)'
 
 - task: NuGetCommand@2
   displayName: 'NuGet push'
   inputs:
     command: push
-    publishVstsFeed: '$(System.TeamProject)/StringUtilities'
-    allowPackageConflicts: true
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+    publishVstsFeed: 'StringUtilities/StringUtilities'
