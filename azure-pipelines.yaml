@@ -46,6 +46,8 @@ steps:
 - task: NuGetCommand@2
   displayName: 'NuGet push'
   inputs:
-    command: push
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-    publishVstsFeed: 'StringUtilities/StringUtilities'
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'COMP367Amusse/StringUtilities'
+    allowPackageConflicts: true
