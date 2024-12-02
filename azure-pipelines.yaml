@@ -33,13 +33,14 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: NuGetCommand@2
-  displayName: 'NuGet pack'
+- task: DotNetCoreCLI@2
+  displayName: 'Pack'
   inputs:
-    command: pack
+    command: 'pack'
     packagesToPack: '**/StringLibrary.csproj'
-    versioningScheme: byEnvVar
-    versionEnvVar: packageVersion
+    configuration: '$(buildConfiguration)'
+    versioningScheme: 'byEnvVar'
+    versionEnvVar: 'packageVersion'
     outputDir: '$(Build.ArtifactStagingDirectory)'
 
 - task: NuGetCommand@2
